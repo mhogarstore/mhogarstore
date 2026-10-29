@@ -1,0 +1,17 @@
+{
+  "name": "mhogarstore",
+  "private": true,
+  "type": "module",
+  "description": "Tienda online de mhogarstore: web estática + funciones de Netlify + Supabase + Stripe",
+  "scripts": {
+    "dev": "npx netlify-cli dev",
+    "test": "node --test --experimental-test-module-mocks"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.45.4",
+    "stripe": "17.7.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Panel · mhogarstore</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+/* Panel de trabajo: barra superior con pestañas, listas densas y un editor de pieza en dos columnas. */
+:root {
+  --bg: #f4f4f1; --surface: #fbfbf9; --ink: #1e1f1c; --muted: #6b6d66; --line: #d9dad3;
+  --accent: #4a5a45; --accent-ink: #f4f4f1; --ok: #3f6b3a; --warn: #8a6a1c; --bad: #9a3f2e; --tone: #e6e6df;
+  --f-display: "Newsreader", Georgia, serif; --f-body: "Hanken Grotesk", system-ui, sans-serif; --f-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #151614; --surface: #1c1d1a; --ink: #e9e9e3; --muted: #9c9e95; --line: #2e302b;
+    --accent: #a9bb9f; --accent-ink: #151614; --ok: #9cc792; --warn: #e0c172; --bad: #e59a87; --tone: #22231f; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1100px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2 { font-family: var(--f-display); font-weight: 300; margin: 0; line-height: 1.15; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn { border: 1px solid var(--ink); background: var(--ink); color: var(--bg); padding: 10px 18px; cursor: pointer; font-weight: 500; }
+.btn.line { background: transparent; color: var(--ink); }
+.btn.small { padding: 6px 12px; font-size: .85rem; }
+.btn[disabled] { opacity: .5; cursor: wait; }
+.link { background: none; border: 0; padding: 0; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; color: var(--muted); font-size: .85rem; }
+.mono { font-family: var(--f-mono); font-size: .8rem; }
+.muted { color: var(--muted); }
+label.f { display: flex; flex-direction: column; gap: 4px; font-size: .8rem; color: var(--muted); font-weight: 500; }
+label.f input, label.f select, label.f textarea, .bar select, .bar input {
+  background: var(--surface); border: 1px solid var(--line); padding: 9px 10px; font-size: .95rem; color: var(--ink); width: 100%; }
+textarea { min-height: 110px; resize: vertical; }
+
+header.top { border-bottom: 1px solid var(--line); background: var(--bg); position: sticky; top: 0; z-index: 5; }
+header.top .wrap { display: flex; align-items: center; gap: 24px; padding-block: 14px; flex-wrap: wrap; }
+.brand { font-family: var(--f-display); font-size: 1.35rem; text-decoration: none; color: inherit; }
+.brand em { color: var(--muted); font-weight: 300; }
+.tabs { display: flex; gap: 18px; }
+.tabs button { background: none; border: 0; border-bottom: 1px solid transparent; padding: 4px 0; cursor: pointer; color: var(--muted); }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+.who { margin-left: auto; display: flex; gap: 14px; align-items: center; font-size: .85rem; color: var(--muted); }
+
+main .wrap { padding-block: 32px 64px; display: flex; flex-direction: column; gap: 20px; }
+.bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.bar h1 { font-size: 2rem; margin-right: auto; }
+.bar select, .bar input { width: auto; }
+
+/* Lista de piezas */
+.list { border-top: 1px solid var(--line); }
+.row { display: grid; grid-template-columns: 56px minmax(0, 1fr) 90px 130px; gap: 14px; align-items: center; padding-block: 10px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.row:hover { background: var(--surface); }
+.thumb { width: 56px; height: 56px; background: var(--tone); object-fit: cover; display: block; }
+.row .t { font-weight: 500; }
+.row .price { text-align: right; font-variant-numeric: tabular-nums; }
+.pill { justify-self: end; font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border: 1px solid currentColor; }
+.pill.disponible, .pill.pagado { color: var(--ok); }
+.pill.reservado, .pill.pendiente { color: var(--warn); }
+.pill.vendido, .pill.entregado, .pill.borrador { color: var(--muted); }
+.pill.cancelado { color: var(--bad); }
+.empty { padding: 48px 0; text-align: center; color: var(--muted); }
+
+/* Editor */
+.editor { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 32px; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fields .full { grid-column: 1 / -1; }
+.photos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.ph { position: relative; aspect-ratio: 1; background: var(--tone); }
+.ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ph .acts { position: absolute; inset: auto 0 0 0; display: flex; justify-content: space-between; background: var(--bg); opacity: .92; }
+.ph .acts button { background: none; border: 0; cursor: pointer; padding: 4px 8px; font-size: .75rem; }
+.ph .tag { position: absolute; top: 6px; left: 6px; background: var(--bg); font-size: .7rem; padding: 2px 6px; }
+.ph.pending { outline: 1px dashed var(--muted); }
+.drop { border: 1px dashed var(--line); padding: 18px; text-align: center; color: var(--muted); cursor: pointer; font-size: .9rem; }
+.drop:hover { border-color: var(--ink); color: var(--ink); }
+.side { display: flex; flex-direction: column; gap: 14px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.hint { font-size: .8rem; color: var(--muted); }
+
+/* Pedidos */
+.order { border-top: 1px solid var(--line); padding-block: 16px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; }
+.order h3 { margin: 0; font-size: 1rem; font-weight: 500; }
+.order ul { margin: 0; padding-left: 18px; color: var(--muted); }
+.order .r { text-align: right; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+
+/* Acceso */
+.login { max-width: 380px; margin: 14vh auto 0; padding-inline: 16px; display: flex; flex-direction: column; gap: 16px; }
+.login h1 { font-size: 2.2rem; }
+.msg { font-size: .88rem; padding: 10px 12px; border: 1px solid var(--line); background: var(--surface); }
+.msg.bad { border-color: var(--bad); color: var(--bad); }
+
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 18px; z-index: 50; font-size: .9rem; max-width: calc(100vw - 32px); }
+
+@media (max-width: 760px) {
+  .editor { grid-template-columns: minmax(0, 1fr); }
+  .row { grid-template-columns: 48px minmax(0, 1fr) auto; }
+  .row .price { display: none; }
+  .thumb { width: 48px; height: 48px; }
+  .fields { grid-template-columns: minmax(0, 1fr); }
+  .who span { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Acceso -->
+<section class="login" id="loginView" hidden>
+  <a class="brand" href="/">mhogar<em>store</em></a>
+  <h1>Panel de la tienda</h1>
+  <form id="loginForm" class="side">
+    <label class="f" for="lEmail">Correo<input id="lEmail" type="email" required autocomplete="username"></label>
+    <label class="f" for="lPass">Contraseña<input id="lPass" type="password" required autocomplete="current-password"></label>
+    <button class="btn" type="submit">Entrar</button>
+    <button class="link" type="button" id="forgot">He olvidado la contraseña</button>
+  </form>
+  <form id="newPassForm" class="side" hidden>
+    <p>Escribe tu nueva contraseña.</p>
+    <label class="f" for="nPass">Nueva contraseña<input id="nPass" type="password" minlength="8" required autocomplete="new-password"></label>
+    <button class="btn" type="submit">Guardar contraseña</button>
+  </form>
+  <p class="msg" id="loginMsg" hidden></p>
+</section>
+
+<!-- Panel -->
+<div id="appView" hidden>
+  <header class="top"><div class="wrap">
+    <a class="brand" href="/" target="_blank" rel="noopener">mhogar<em>store</em></a>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-tab="piezas" aria-selected="true">Piezas</button>
+      <button role="tab" data-tab="pedidos" aria-selected="false">Pedidos</button>
+      <button role="tab" data-tab="correos" aria-selected="false">Correos</button>
+    </nav>
+    <div class="who"><span id="whoEmail"></span><button class="link" id="logout">Salir</button></div>
+  </div></header>
+  <main><div class="wrap" id="view"></div></main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="../config.js"></script>
+<script>
+(function () {
+  "use strict";
+  var CFG = window.MHOGAR || {};
+  var $ = function (s) { return document.querySelector(s); };
+  if (!CFG.supabaseUrl || !CFG.supabaseAnonKey) {
+    document.body.innerHTML = '<div class="login"><h1>Panel sin conectar</h1><p class="msg">Falta configurar Supabase en <span class="mono">public/config.js</span>.</p></div>';
+    return;
+  }
+  if (!window.supabase) {
+    document.body.innerHTML = '<div class="login"><h1>Sin conexión</h1><p class="msg">No se ha podido cargar el panel. Comprueba la conexión a internet y recarga la página.</p></div>';
+    return;
+  }
+  var sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey);
+  var EUR = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 2, minimumFractionDigits: 0 });
+  var CATS = [], tab = "piezas", filter = "activas";
+  var STATUS = { borrador: "Borrador", disponible: "Disponible", reservado: "Reservado", vendido: "Vendido" };
+  var ORDER_STATUS = { pendiente: "Pendiente de pago", pagado: "Pagado", entregado: "Entregado", cancelado: "Cancelado" };
+
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function photoUrl(path) { return sb.storage.from("fotos").getPublicUrl(path).data.publicUrl; }
+  var tt;
+  function toast(m) { var t = $(".toast"); if (t) t.remove(); t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); t.textContent = m; document.body.appendChild(t); clearTimeout(tt); tt = setTimeout(function () { t.remove(); }, 3000); }
+  function fail(err) { console.error(err); toast("Algo ha fallado: " + (err && err.message || err)); }
+  function cents(v) { if (v === "" || v == null) return null; var n = Math.round(parseFloat(String(v).replace(",", ".")) * 100); return isFinite(n) ? n : NaN; }
+  function fromCents(c) { return c == null ? "" : String(c / 100).replace(".", ","); }
+  function date(iso) { return iso ? new Date(iso).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : ""; }
+
+  // ---------- Acceso ----------
+  function showLogin(msg, bad) {
+    $("#appView").hidden = true; $("#loginView").hidden = false;
+    var m = $("#loginMsg"); m.hidden = !msg; m.textContent = msg || ""; m.className = "msg" + (bad ? " bad" : "");
+  }
+  $("#loginForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    sb.auth.signInWithPassword({ email: $("#lEmail").value, password: $("#lPass").value }).then(function (r) {
+      if (r.error) showLogin("Correo o contraseña incorrectos.", true);
+    });
+  });
+  $("#forgot").addEventListener("click", function () {
+    var email = $("#lEmail").value;
+    if (!email) return showLogin("Escribe tu correo y vuelve a pulsar «He olvidado la contraseña».", true);
+    sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + "/admin/" }).then(function () {
+      showLogin("Si ese correo tiene acceso, te hemos enviado un enlace para crear una contraseña nueva.");
+    });
+  });
+  $("#newPassForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    sb.auth.updateUser({ password: $("#nPass").value }).then(function (r) {
+      if (r.error) return showLogin(r.error.message, true);
+      $("#newPassForm").hidden = true; $("#loginForm").hidden = false; toast("Contraseña guardada"); start();
+    });
+  });
+  $("#logout").addEventListener("click", function () { sb.auth.signOut(); });
+
+  sb.auth.onAuthStateChange(function (event, session) {
+    if (event === "PASSWORD_RECOVERY") { showLogin(""); $("#loginForm").hidden = true; $("#newPassForm").hidden = false; return; }
+    if (event === "SIGNED_OUT") return showLogin("");
+    if (event === "SIGNED_IN" || event === "INITIAL_SESSION") { if (session) start(session); else showLogin(""); }
+  });
+
+  var started = false;
+  function start(session) {
+    if (started) return;
+    sb.from("admins").select("email").then(function (r) {
+      if (r.error || !r.data.length) { sb.auth.signOut(); return showLogin("Esta cuenta no tiene acceso al panel.", true); }
+      started = true;
+      $("#loginView").hidden = true; $("#appView").hidden = false;
+      $("#whoEmail").textContent = session ? session.user.email : "";
+      return sb.from("categories").select("*").order("position").then(function (c) { CATS = c.data || []; render(); });
+    });
+  }
+
+  // ---------- Pestañas ----------
+  document.querySelector(".tabs").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-tab]"); if (!b) return;
+    tab = b.dataset.tab;
+    document.querySelectorAll("[data-tab]").forEach(function (x) { x.setAttribute("aria-selected", x === b); });
+    render();
+  });
+  function render() { if (tab === "piezas") listItems(); else if (tab === "pedidos") listOrders(); else listEmails(); }
+
+  // ---------- Piezas ----------
+  function listItems() {
+    var v = $("#view");
+    v.innerHTML = '<div class="bar"><h1>Piezas</h1>' +
+      '<label class="sr" for="fStatus" hidden>Mostrar</label><select id="fStatus">' +
+      [["activas", "En tienda y borradores"], ["disponible", "Disponibles"], ["borrador", "Borradores"], ["vendido", "Vendidas"], ["todas", "Todas"]].map(function (o) {
+        return '<option value="' + o[0] + '"' + (filter === o[0] ? " selected" : "") + '>' + o[1] + '</option>'; }).join("") +
+      '</select><button class="btn" id="newItem">Nueva pieza</button></div><div class="list" id="itemList"><p class="empty">Cargando…</p></div>';
+    $("#fStatus").onchange = function () { filter = this.value; listItems(); };
+    $("#newItem").onclick = function () { editItem(null); };
+    var q = sb.from("items").select("*, item_photos(path, position)").order("created_at", { ascending: false });
+    if (filter === "activas") q = q.neq("status", "vendido"); else if (filter !== "todas") q = q.eq("status", filter);
+    q.then(function (r) {
+      if (r.error) return fail(r.error);
+      var el = $("#itemList");
+      if (!r.data.length) { el.innerHTML = '<p class="empty">No hay piezas aquí. Pulsa «Nueva pieza» para subir la primera.</p>'; return; }
+      el.innerHTML = r.data.map(function (it) {
+        var ph = (it.item_photos || []).sort(function (a, b) { return a.position - b.position; })[0];
+        var st = it.status === "reservado" && new Date(it.reserved_until) < new Date() ? "disponible" : it.status;
+        return '<div class="row" data-id="' + it.id + '" tabindex="0" role="button">' +
+          (ph ? '<img class="thumb" src="' + esc(photoUrl(ph.path)) + '" alt="" loading="lazy">' : '<div class="thumb"></div>') +
+          '<div><div class="t">' + esc(it.title) + '</div><div class="mono muted">Ref. ' + it.ref + ' · ' + esc((CATS.filter(function (c) { return c.id === it.category_id; })[0] || {}).name || "") + '</div></div>' +
+          '<div class="price">' + EUR.format(it.price_cents / 100) + '</div>' +
+          '<span class="pill ' + st + '">' + STATUS[st] + '</span></div>';
+      }).join("");
+      el.onclick = function (e) { var row = e.target.closest(".row"); if (row) editItem(row.dataset.id); };
+      el.onkeydown = function (e) { if (e.key === "Enter") { var row = e.target.closest(".row"); if (row) editItem(row.dataset.id); } };
+    });
+  }
+
+  var pending = [];   // fotos elegidas pero aún no subidas
+  function editItem(id) {
+    pending = [];
+    var load = id ? sb.from("items").select("*, item_photos(*)").eq("id", id).single() : Promise.resolve({ data: { status: "borrador", condition: "muy", item_photos: [] } });
+    load.then(function (r) {
+      if (r.error) return fail(r.error);
+      var it = r.data; it.item_photos = (it.item_photos || []).sort(function (a, b) { return a.position - b.position; });
+      var sel = function (name, opts, val) { return '<select id="' + name + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === val ? " selected" : "") + '>' + esc(o[1]) + '</option>'; }).join("") + '</select>'; };
+      $("#view").innerHTML =
+        '<div class="bar"><button class="link" id="back">← Volver a piezas</button></div>' +
+        '<div class="bar"><h1>' + (id ? esc(it.title) : "Nueva pieza") + '</h1>' + (id ? '<span class="mono muted">Ref. ' + it.ref + '</span>' : "") + '</div>' +
+        '<form id="itemForm" class="editor">' +
+          '<div class="fields">' +
+            '<label class="f full" for="iTitle">Nombre<input id="iTitle" required maxlength="120" value="' + esc(it.title) + '" placeholder="Aparador de teca de tres puertas"></label>' +
+            '<label class="f" for="iCat">Categoría' + sel("iCat", CATS.map(function (c) { return [c.id, c.name]; }), it.category_id) + '</label>' +
+            '<label class="f" for="iCond">Estado de la pieza' + sel("iCond", [["nuevo", "Como nuevo"], ["muy", "Muy buen estado"], ["bueno", "Buen estado, con marcas de uso"]], it.condition) + '</label>' +
+            '<label class="f" for="iPrice">Precio (€)<input id="iPrice" required inputmode="decimal" value="' + fromCents(it.price_cents) + '" placeholder="420"></label>' +
+            '<label class="f" for="iWas">Precio anterior (€), si está rebajada<input id="iWas" inputmode="decimal" value="' + fromCents(it.was_price_cents) + '"></label>' +
+            '<label class="f full" for="iDim">Medidas<input id="iDim" value="' + esc(it.dimensions) + '" placeholder="an 180 × fo 45 × al 78 cm"></label>' +
+            '<label class="f" for="iMat">Material<input id="iMat" value="' + esc(it.material) + '" placeholder="Teca"></label>' +
+            '<label class="f" for="iEra">Época<input id="iEra" value="' + esc(it.era) + '" placeholder="Años 60"></label>' +
+            '<label class="f full" for="iDesc">Descripción<textarea id="iDesc" placeholder="Qué es, cómo está y qué marcas de uso tiene.">' + esc(it.description) + '</textarea></label>' +
+          '</div>' +
+          '<div class="side">' +
+            '<label class="f" for="iStatus">Visibilidad' + sel("iStatus", [["borrador", "Borrador (no se ve en la web)"], ["disponible", "Disponible a la venta"], ["vendido", "Vendida"]].concat(it.status === "reservado" ? [["reservado", "Reservada (pago en curso)"]] : []), it.status) + '</label>' +
+            '<div><p class="f" style="margin:0 0 6px">Fotos · la primera es la portada</p><div class="photos" id="photos"></div></div>' +
+            '<label class="drop" for="iFiles">Añadir fotos<br><span class="hint">JPG o PNG. Se reducen solas a 1600 px.</span></label>' +
+            '<input id="iFiles" type="file" accept="image/*" multiple hidden>' +
+            '<div class="actions"><button class="btn" type="submit" id="saveBtn">Guardar</button>' +
+            (id ? '<button class="link" type="button" id="delItem">Borrar pieza</button>' : "") + '</div>' +
+            '<p class="hint">Consejo: fotos con luz natural, de frente, de lado y de cualquier marca de uso.</p>' +
+          '</div>' +
+        '</form>';
+      $("#back").onclick = listItems;
+      drawPhotos(it);
+      $("#iFiles").onchange = function () {
+        Array.prototype.forEach.call(this.files, function (f) { pending.push({ file: f, url: URL.createObjectURL(f) }); });
+        this.value = ""; drawPhotos(it);
+      };
+      $("#itemForm").onsubmit = function (e) { e.preventDefault(); saveItem(it); };
+      if (id) $("#delItem").onclick = function () { confirmDelete(it); };
+    });
+  }
+
+  function drawPhotos(it) {
+    var el = $("#photos");
+    el.innerHTML = it.item_photos.map(function (p, i) {
+      return '<div class="ph">' + (i === 0 ? '<span class="tag">Portada</span>' : "") + '<img src="' + esc(photoUrl(p.path)) + '" alt="">' +
+        '<div class="acts">' + (i > 0 ? '<button type="button" data-first="' + p.id + '">Portada</button>' : "<span></span>") + '<button type="button" data-delphoto="' + p.id + '">Quitar</button></div></div>';
+    }).join("") + pending.map(function (p, i) {
+      return '<div class="ph pending"><span class="tag">Sin guardar</span><img src="' + p.url + '" alt=""><div class="acts"><span></span><button type="button" data-delpending="' + i + '">Quitar</button></div></div>';
+    }).join("");
+    el.onclick = function (e) {
+      var b = e.target.closest("button"); if (!b) return;
+      if (b.dataset.delpending) { pending.splice(+b.dataset.delpending, 1); drawPhotos(it); }
+      else if (b.dataset.delphoto) {
+        var p = it.item_photos.filter(function (x) { return x.id === b.dataset.delphoto; })[0];
+        sb.from("item_photos").delete().eq("id", p.id).then(function (r) {
+          if (r.error) return fail(r.error);
+          sb.storage.from("fotos").remove([p.path]);
+          it.item_photos = it.item_photos.filter(function (x) { return x !== p; }); drawPhotos(it);
+        });
+      } else if (b.dataset.first) {
+        var first = it.item_photos.filter(function (x) { return x.id === b.dataset.first; })[0];
+        it.item_photos = [first].concat(it.item_photos.filter(function (x) { return x !== first; }));
+        Promise.all(it.item_photos.map(function (p, i) { p.position = i; return sb.from("item_photos").update({ position: i }).eq("id", p.id); }))
+          .then(function () { drawPhotos(it); toast("Portada cambiada"); }, fail);
+      }
+    };
+  }
+
+  // Reduce la foto a 1600 px de lado como máximo y la guarda en JPG.
+  function shrink(file) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      img.onload = function () {
+        var s = Math.min(1, 1600 / Math.max(img.width, img.height));
+        var c = document.createElement("canvas"); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        c.toBlob(function (b) { b ? resolve(b) : reject(new Error("No se pudo leer la foto")); }, "image/jpeg", 0.84);
+      };
+      img.onerror = function () { reject(new Error("«" + file.name + "» no es una imagen válida")); };
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  function saveItem(it) {
+    var price = cents($("#iPrice").value), was = cents($("#iWas").value);
+    if (!price || isNaN(price) || price <= 0) return toast("Escribe un precio válido, por ejemplo 420 o 39,90.");
+    if (was !== null && (isNaN(was) || was <= price)) return toast("El precio anterior tiene que ser mayor que el precio actual.");
+    var row = {
+      title: $("#iTitle").value.trim(), category_id: $("#iCat").value, condition: $("#iCond").value,
+      price_cents: price, was_price_cents: was, dimensions: $("#iDim").value.trim() || null,
+      material: $("#iMat").value.trim() || null, era: $("#iEra").value.trim() || null,
+      description: $("#iDesc").value.trim() || null, status: $("#iStatus").value
+    };
+    if (row.status === "vendido" && it.status !== "vendido") row.sold_at = new Date().toISOString();
+    if (row.status !== "reservado") row.reserved_until = null;
+    var btn = $("#saveBtn"); btn.disabled = true; btn.textContent = "Guardando…";
+    var q = it.id ? sb.from("items").update(row).eq("id", it.id).select().single() : sb.from("items").insert(row).select().single();
+    q.then(function (r) {
+      if (r.error) throw r.error;
+      var saved = r.data, base = it.item_photos.length;
+      return pending.reduce(function (chain, p, i) {
+        return chain.then(function () {
+          btn.textContent = "Subiendo foto " + (i + 1) + " de " + pending.length + "…";
+          return shrink(p.file).then(function (blob) {
+            var path = saved.id + "/" + Date.now() + "-" + i + ".jpg";
+            return sb.storage.from("fotos").upload(path, blob, { contentType: "image/jpeg", cacheControl: "31536000" }).then(function (u) {
+              if (u.error) throw u.error;
+              return sb.from("item_photos").insert({ item_id: saved.id, path: path, alt: row.title, position: base + i });
+            }).then(function (x) { if (x.error) throw x.error; });
+          });
+        });
+      }, Promise.resolve()).then(function () { pending = []; toast("Guardado"); editItem(saved.id); });
+    }).catch(function (err) { btn.disabled = false; btn.textContent = "Guardar"; fail(err); });
+  }
+
+  function confirmDelete(it) {
+    var acts = $(".actions");
+    acts.innerHTML = '<span>¿Borrar «' + esc(it.title) + '» y sus fotos? No se puede deshacer.</span>' +
+      '<button class="btn small" type="button" id="yesDel">Sí, borrar</button><button class="link" type="button" id="noDel">Cancelar</button>';
+    $("#noDel").onclick = function () { editItem(it.id); };
+    $("#yesDel").onclick = function () {
+      sb.from("items").delete().eq("id", it.id).then(function (r) {
+        if (r.error) return toast(r.error.code === "23503" ? "Esta pieza está en un pedido. Márcala como vendida en lugar de borrarla." : "No se ha podido borrar: " + r.error.message);
+        sb.storage.from("fotos").remove(it.item_photos.map(function (p) { return p.path; }));
+        toast("Pieza borrada"); listItems();
+      });
+    };
+  }
+
+  // ---------- Pedidos ----------
+  function listOrders() {
+    $("#view").innerHTML = '<div class="bar"><h1>Pedidos</h1></div><div id="orders"><p class="empty">Cargando…</p></div>';
+    sb.from("orders").select("*, order_items(title, price_cents)").neq("status", "cancelado").order("created_at", { ascending: false }).limit(200).then(function (r) {
+      if (r.error) return fail(r.error);
+      var el = $("#orders");
+      if (!r.data.length) { el.innerHTML = '<p class="empty">Todavía no hay pedidos. Aparecerán aquí en cuanto alguien pague.</p>'; return; }
+      el.innerHTML = r.data.map(function (o) {
+        var a = o.shipping_address;
+        return '<div class="order"><div><h3>Pedido ' + o.number + ' · ' + esc(o.customer_name || "Cliente sin nombre") + '</h3>' +
+          '<p class="muted">' + date(o.paid_at || o.created_at) + ' · ' + (o.delivery === "envio" ? "Envío a domicilio" : "Recogida en tienda") + '</p>' +
+          '<ul>' + o.order_items.map(function (l) { return '<li>' + esc(l.title) + ' · ' + EUR.format(l.price_cents / 100) + '</li>'; }).join("") + '</ul>' +
+          (o.customer_email || o.customer_phone ? '<p class="mono">' + esc([o.customer_email, o.customer_phone].filter(Boolean).join(" · ")) + '</p>' : "") +
+          (a ? '<p class="muted">' + esc([a.line1, a.line2, a.postal_code, a.city, a.state].filter(Boolean).join(", ")) + '</p>' : "") +
+          '</div><div class="r"><strong>' + EUR.format(o.total_cents / 100) + '</strong><span class="pill ' + o.status + '">' + ORDER_STATUS[o.status] + '</span>' +
+          (o.status === "pagado" ? '<button class="btn small line" data-deliver="' + o.id + '">Marcar entregado</button>' : "") + '</div></div>';
+      }).join("");
+      el.onclick = function (e) {
+        var b = e.target.closest("[data-deliver]"); if (!b) return;
+        sb.from("orders").update({ status: "entregado" }).eq("id", b.dataset.deliver).then(function (x) { if (x.error) return fail(x.error); toast("Pedido entregado"); listOrders(); });
+      };
+    });
+  }
+
+  // ---------- Correos ----------
+  function listEmails() {
+    $("#view").innerHTML = '<div class="bar"><h1>Correos</h1><button class="btn line" id="copyNews">Copiar correos del boletín</button></div><div class="list" id="mails"><p class="empty">Cargando…</p></div>';
+    sb.from("subscribers").select("*, items(title, ref)").order("created_at", { ascending: false }).limit(1000).then(function (r) {
+      if (r.error) return fail(r.error);
+      var el = $("#mails");
+      if (!r.data.length) { el.innerHTML = '<p class="empty">Aquí aparecerán quienes se apunten al boletín o pidan aviso de piezas parecidas.</p>'; }
+      else el.innerHTML = r.data.map(function (s) {
+        return '<div class="row" style="grid-template-columns:minmax(0,1fr) auto;cursor:default"><div><div class="mono">' + esc(s.email) + '</div>' +
+          '<div class="muted">' + (s.kind === "aviso" ? "Quiere aviso de algo parecido a: " + esc(s.items ? s.items.title + " (Ref. " + s.items.ref + ")" : "una pieza ya borrada") : "Boletín") + '</div></div>' +
+          '<span class="muted">' + date(s.created_at) + '</span></div>';
+      }).join("");
+      $("#copyNews").onclick = function () {
+        var list = r.data.filter(function (s) { return s.kind === "boletin"; }).map(function (s) { return s.email; }).join(", ");
+        if (!list) return toast("Todavía no hay correos en el boletín.");
+        navigator.clipboard.writeText(list).then(function () { toast("Copiados " + list.split(", ").length + " correos"); }, function () { toast("No se han podido copiar."); });
+      };
+    });
+  }
+})();
+</script>
+</body>
+</html>

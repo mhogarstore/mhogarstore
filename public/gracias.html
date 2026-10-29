@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gracias por tu compra · mhogarstore</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;1,6..72,300&family=Hanken+Grotesk:wght@400;500&display=swap">
+<style>
+:root { --bg: #f4f4f1; --ink: #1e1f1c; --muted: #6b6d66; --line: #d9dad3; --accent: #4a5a45;
+  --f-display: "Newsreader", Georgia, serif; --f-body: "Hanken Grotesk", system-ui, sans-serif; }
+@media (prefers-color-scheme: dark) { :root { --bg: #151614; --ink: #e9e9e3; --muted: #9c9e95; --line: #2e302b; --accent: #a9bb9f; color-scheme: dark; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); line-height: 1.6; }
+main { max-width: 560px; margin: 0 auto; padding: 12vh max(16px, env(safe-area-inset-right, 0px)) 64px max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 20px; }
+.brand { font-family: var(--f-display); font-size: 1.5rem; text-decoration: none; color: inherit; }
+.brand em { color: var(--muted); font-weight: 300; }
+h1 { font-family: var(--f-display); font-weight: 300; font-size: clamp(2.2rem, 6vw, 3.2rem); line-height: 1.1; margin: 24px 0 0; }
+h1 em { color: var(--accent); }
+p { margin: 0; color: var(--muted); }
+.num { font-family: ui-monospace, Menlo, monospace; color: var(--ink); }
+a.btn { align-self: flex-start; border: 1px solid var(--ink); background: var(--ink); color: var(--bg); padding: 13px 26px; text-decoration: none; margin-top: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="brand" href="/">mhogar<em>store</em></a>
+  <h1>Gracias. Tu pieza ya es <em>tuya</em>.</h1>
+  <p>Hemos recibido el pago del pedido <span class="num" id="num"></span>. Te llegará el recibo por correo y te escribiremos para coordinar la recogida o el envío.</p>
+  <p>Si tienes cualquier duda, responde al correo del recibo o escríbenos por WhatsApp.</p>
+  <a class="btn" href="/">Volver a la tienda</a>
+</main>
+<script>
+  var n = new URLSearchParams(location.search).get("pedido");
+  document.getElementById("num").textContent = n && /^\d+$/.test(n) ? "nº " + n : "";
+  try { localStorage.removeItem("mh_cart_v1"); } catch (e) {}
+</script>
+</body>
+</html>

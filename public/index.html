@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>mhogarstore · Muebles y objetos de segunda mano</title>
+<meta name="description" content="mhogarstore · Muebles, lámparas y objetos de segunda mano seleccionados, revisados y listos para casa.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+/* Layout: catálogo de galería. Mucho aire, una columna de texto estrecha, rejilla de piezas sobre fondos tonales,
+   la referencia y las medidas de cada pieza en tipografía de inventario. */
+:root {
+  --bg: #f4f4f1;          /* papel de piedra, ligeramente verdoso */
+  --surface: #fbfbf9;
+  --ink: #1e1f1c;
+  --muted: #6b6d66;
+  --line: #d9dad3;
+  --accent: #4a5a45;      /* verde salvia oscuro */
+  --accent-ink: #f4f4f1;
+  --sold: #9a5b46;
+  --tone-1: #e6e6df; --tone-2: #e2e4dc; --tone-3: #e9e5dd; --tone-4: #dfe2df;
+  --drawing: #3a3c36;
+  --overlay: rgba(30,31,28,.38);
+  --f-display: "Newsreader", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --f-body: "Hanken Grotesk", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --gutter-l: max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(16px, env(safe-area-inset-right, 0px));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #151614; --surface: #1c1d1a; --ink: #e9e9e3; --muted: #9c9e95; --line: #2e302b;
+    --accent: #a9bb9f; --accent-ink: #151614; --sold: #d9957c;
+    --tone-1: #22231f; --tone-2: #1f2320; --tone-3: #25231f; --tone-4: #202322;
+    --drawing: #c9cbc2; --overlay: rgba(0,0,0,.55); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #151614; --surface: #1c1d1a; --ink: #e9e9e3; --muted: #9c9e95; --line: #2e302b;
+  --accent: #a9bb9f; --accent-ink: #151614; --sold: #d9957c;
+  --tone-1: #22231f; --tone-2: #1f2320; --tone-3: #25231f; --tone-4: #202322;
+  --drawing: #c9cbc2; --overlay: rgba(0,0,0,.55); color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.6; margin: 0; -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg); }
+.wrap { max-width: 1200px; margin: 0 auto; padding-left: var(--gutter-l); padding-right: var(--gutter-r); }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 300; margin: 0; line-height: 1.1; text-wrap: balance; letter-spacing: -.01em; }
+p { margin: 0; }
+a { color: inherit; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.eyebrow { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.mono { font-family: var(--f-mono); font-size: .78rem; letter-spacing: .02em; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Botones */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--ink); background: var(--ink); color: var(--bg); padding: 13px 26px; font-size: .9rem; font-weight: 500; letter-spacing: .02em; cursor: pointer; text-decoration: none; transition: background .2s, color .2s; }
+.btn:hover { background: transparent; color: var(--ink); }
+.btn-line { background: transparent; color: var(--ink); }
+.btn-line:hover { background: var(--ink); color: var(--bg); }
+.btn[disabled] { opacity: .4; cursor: not-allowed; }
+.btn[disabled]:hover { background: var(--ink); color: var(--bg); }
+.link { background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
+
+/* Barra de aviso */
+.notice { background: var(--accent); color: var(--accent-ink); text-align: center; font-size: .8rem; letter-spacing: .03em; }
+.notice .wrap { padding-block: 8px; }
+
+/* Cabecera */
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line); }
+.top .wrap { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding-block: 16px; gap: 16px; }
+.nav { display: flex; gap: 28px; font-size: .88rem; }
+.nav a { text-decoration: none; color: var(--muted); transition: color .2s; }
+.nav a:hover { color: var(--ink); }
+.brand { font-family: var(--f-display); font-size: 1.7rem; font-weight: 400; text-decoration: none; letter-spacing: -.02em; line-height: 1; white-space: nowrap; }
+.brand em { font-style: italic; font-weight: 300; color: var(--muted); }
+.tools { display: flex; justify-content: flex-end; gap: 6px; }
+.icon-btn { position: relative; width: 40px; height: 40px; display: inline-grid; place-items: center; background: none; border: 0; cursor: pointer; color: var(--ink); }
+.icon-btn svg { width: 20px; height: 20px; }
+.icon-btn .count { position: absolute; top: 4px; right: 2px; min-width: 17px; height: 17px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); font-size: .66rem; display: grid; place-items: center; padding-inline: 4px; font-variant-numeric: tabular-nums; }
+.menu-btn { display: none; }
+.searchbar { border-top: 1px solid var(--line); }
+.searchbar .wrap { display: flex; gap: 12px; align-items: center; padding-block: 12px; }
+.searchbar input { flex: 1; min-width: 0; border: 0; background: transparent; font-family: var(--f-display); font-size: 1.4rem; font-weight: 300; outline: none; padding: 4px 0; }
+.mobile-nav { border-top: 1px solid var(--line); }
+.mobile-nav .wrap { display: flex; flex-direction: column; padding-block: 8px 16px; }
+.mobile-nav a { padding: 10px 0; text-decoration: none; font-family: var(--f-display); font-size: 1.35rem; }
+
+/* Portada */
+.hero .wrap { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(32px, 6vw, 96px); align-items: center; padding-block: clamp(48px, 8vw, 110px) clamp(48px, 7vw, 90px); }
+.hero h1 { font-size: clamp(2.6rem, 5.6vw, 4.6rem); }
+.hero h1 em { font-style: italic; color: var(--accent); }
+.hero-copy { display: flex; flex-direction: column; gap: 24px; align-items: flex-start; }
+.hero-copy p { color: var(--muted); max-width: 38ch; font-size: 1.05rem; }
+.hero-art { position: relative; aspect-ratio: 5 / 4; max-width: 100%; background: var(--tone-3); display: grid; place-items: center; }
+.hero-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hero-art svg { width: 62%; height: auto; color: var(--drawing); }
+.hero-art figcaption { position: absolute; left: 20px; bottom: 16px; right: 20px; display: flex; justify-content: space-between; gap: 12px; color: var(--muted); }
+.hero-art button { position: absolute; inset: 0; background: none; border: 0; cursor: pointer; }
+
+/* Categorías */
+.cats-band { border-block: 1px solid var(--line); }
+.cats-band .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; padding-block: 22px; }
+.cats-band button { background: none; border: 0; padding: 0; cursor: pointer; font-family: var(--f-display); font-size: 1.3rem; font-weight: 300; display: inline-flex; align-items: baseline; gap: 8px; }
+.cats-band button sup { font-family: var(--f-mono); font-size: .68rem; color: var(--muted); }
+.cats-band button:hover span { text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 1px; }
+
+/* Secciones */
+section.block .wrap { padding-block: clamp(56px, 8vw, 104px); }
+.sec-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 36px; }
+.sec-head h2 { font-size: clamp(2rem, 3.6vw, 2.8rem); }
+.sec-head .eyebrow { margin-bottom: 10px; }
+
+/* Tarjetas de pieza */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 44px 24px; }
+.row4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
+.card { display: flex; flex-direction: column; gap: 14px; background: none; border: 0; padding: 0; text-align: left; cursor: pointer; color: inherit; }
+.card .pic { position: relative; aspect-ratio: 4 / 5; max-width: 100%; width: 100%; display: grid; place-items: center; overflow: hidden; }
+.pic img, .gallery .main img, .thumbs img, .mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card .pic svg { width: 64%; height: auto; color: var(--drawing); transition: transform .5s ease; }
+.card:hover .pic svg, .card:hover .pic img { transform: scale(1.04); }
+.card .pic img { transition: transform .5s ease; }
+.card .badge { position: absolute; top: 14px; left: 14px; font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; background: var(--bg); padding: 4px 9px; }
+.card .badge.sold { color: var(--sold); }
+.card.is-sold .pic svg { opacity: .45; }
+.card .fav { position: absolute; top: 8px; right: 8px; }
+.card .info { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 16px; align-items: baseline; }
+.card h3 { font-family: var(--f-body); font-size: .98rem; font-weight: 500; line-height: 1.35; letter-spacing: 0; }
+.card .price { font-variant-numeric: tabular-nums; font-size: .98rem; }
+.card .price s { color: var(--muted); font-size: .85rem; margin-right: 6px; }
+.card .sub { grid-column: 1 / -1; color: var(--muted); font-size: .84rem; }
+
+/* Filtros */
+.filters { display: flex; flex-wrap: wrap; gap: 12px 28px; align-items: center; padding-bottom: 20px; margin-bottom: 36px; border-bottom: 1px solid var(--line); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.chip { background: none; border: 0; border-bottom: 1px solid transparent; padding: 4px 0; cursor: pointer; color: var(--muted); font-size: .92rem; }
+.chip[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+.chip:hover { color: var(--ink); }
+.filters .right { margin-left: auto; display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; }
+.sel { display: inline-flex; gap: 8px; align-items: center; font-size: .88rem; color: var(--muted); }
+.sel select { border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); padding: 4px 2px; cursor: pointer; }
+.check { display: inline-flex; gap: 8px; align-items: center; font-size: .88rem; color: var(--muted); cursor: pointer; }
+.check input { accent-color: var(--accent); width: 16px; height: 16px; }
+.result-n { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.empty { padding: 60px 0; text-align: center; color: var(--muted); display: flex; flex-direction: column; gap: 16px; align-items: center; }
+
+/* Nosotros */
+.about { background: var(--surface); border-block: 1px solid var(--line); }
+.about .wrap { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(32px, 6vw, 96px); }
+.about h2 { font-size: clamp(2rem, 3.6vw, 2.8rem); }
+.about .lead { font-family: var(--f-display); font-size: clamp(1.25rem, 2vw, 1.5rem); font-weight: 300; line-height: 1.45; max-width: 34ch; }
+.steps { display: grid; gap: 28px; margin-top: 40px; }
+.step { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; padding-top: 20px; border-top: 1px solid var(--line); }
+.step h3 { font-family: var(--f-body); font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 600; padding-top: 3px; }
+.step p { color: var(--muted); max-width: 52ch; }
+
+/* Visítanos */
+.visit .wrap { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; }
+.visit h2 { grid-column: 1 / -1; font-size: clamp(2rem, 3.6vw, 2.8rem); }
+.visit .col { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--ink); padding-top: 18px; }
+.visit dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 20px; font-variant-numeric: tabular-nums; }
+.visit dt { color: var(--muted); }
+.visit dd { margin: 0; }
+.copyable { display: inline-flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.placeholder { color: var(--muted); font-size: .8rem; font-style: italic; }
+
+/* Boletín */
+.news { border-top: 1px solid var(--line); }
+.news .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 24px; padding-block: 64px; }
+.news h2 { font-size: clamp(1.7rem, 3vw, 2.3rem); max-width: 22ch; }
+.news form { display: flex; flex: 1 1 340px; max-width: 480px; border-bottom: 1px solid var(--ink); }
+.news input { flex: 1; min-width: 0; border: 0; background: transparent; padding: 12px 0; outline: none; }
+.news button { background: none; border: 0; cursor: pointer; font-weight: 500; padding-inline: 8px 0; }
+
+footer { border-top: 1px solid var(--line); color: var(--muted); font-size: .84rem; }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 32px; padding-block: 28px calc(28px + env(safe-area-inset-bottom, 0px)); }
+footer nav { display: flex; gap: 20px; flex-wrap: wrap; }
+
+/* Ficha (diálogo) y cesta (panel) */
+dialog { border: 0; padding: 0; color: var(--ink); background: var(--bg); max-width: min(1040px, calc(100vw - 32px)); width: 100%; max-height: calc(100dvh - 32px); overflow: auto; }
+dialog::backdrop { background: var(--overlay); }
+.sheet { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.gallery { display: flex; flex-direction: column; }
+.gallery .main { aspect-ratio: 1 / 1; max-width: 100%; display: grid; place-items: center; overflow: hidden; }
+.gallery .main svg { width: 64%; height: auto; color: var(--drawing); }
+.gallery .main.zoom svg { width: 150%; transform: translate(10%, -12%); }
+.thumbs { display: flex; gap: 8px; padding: 8px; }
+.thumbs { overflow-x: auto; }
+.thumbs button { flex: none;  width: 64px; aspect-ratio: 1; border: 1px solid transparent; padding: 0; cursor: pointer; display: grid; place-items: center; overflow: hidden; }
+.thumbs button[aria-pressed="true"] { border-color: var(--ink); }
+.thumbs svg { width: 70%; color: var(--drawing); }
+.thumbs button.z svg { width: 150%; transform: translate(10%, -12%); }
+.detail { padding: clamp(24px, 4vw, 48px); display: flex; flex-direction: column; gap: 20px; position: relative; }
+.detail h2 { font-size: clamp(1.8rem, 3vw, 2.4rem); padding-right: 32px; }
+.detail .price { font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+.detail .price s { color: var(--muted); font-size: 1rem; margin-right: 8px; }
+.specs { margin: 0; display: grid; grid-template-columns: auto 1fr; border-top: 1px solid var(--line); }
+.specs dt, .specs dd { margin: 0; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: .9rem; }
+.specs dt { color: var(--muted); padding-right: 24px; }
+.desc { color: var(--muted); max-width: 56ch; }
+.measure-note { display: flex; gap: 10px; align-items: flex-start; font-size: .86rem; background: var(--surface); border: 1px solid var(--line); padding: 12px 14px; cursor: pointer; }
+.measure-note input { accent-color: var(--accent); margin-top: 4px; flex: none; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.close { position: absolute; top: 14px; right: 14px; }
+.sold-box { display: flex; flex-direction: column; gap: 10px; }
+.sold-box form { display: flex; border-bottom: 1px solid var(--ink); max-width: 400px; }
+.sold-box input { flex: 1; min-width: 0; border: 0; background: transparent; padding: 10px 0; outline: none; }
+.sold-box button { background: none; border: 0; cursor: pointer; font-weight: 500; }
+
+.drawer { position: fixed; inset: 0; z-index: 40; display: flex; justify-content: flex-end; }
+.drawer .shade { position: absolute; inset: 0; background: var(--overlay); border: 0; cursor: pointer; }
+.drawer aside { position: relative; width: min(440px, 100%); height: 100%; background: var(--bg); display: flex; flex-direction: column;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) max(24px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) 24px; gap: 18px; overflow: auto; animation: slide .3s ease; }
+@keyframes slide { from { transform: translateX(30px); opacity: 0; } }
+.drawer header { display: flex; justify-content: space-between; align-items: center; }
+.drawer h2 { font-size: 1.8rem; }
+.line-item { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding-block: 12px; border-bottom: 1px solid var(--line); }
+.line-item .mini { aspect-ratio: 1; display: grid; place-items: center; }
+.line-item .mini svg { width: 70%; color: var(--drawing); }
+.line-item p { font-size: .9rem; }
+.line-item .remove { font-size: .8rem; color: var(--muted); }
+.totals { display: grid; grid-template-columns: 1fr auto; gap: 6px; font-variant-numeric: tabular-nums; padding-top: 6px; }
+.totals .big { font-family: var(--f-display); font-size: 1.5rem; }
+.muted { color: var(--muted); }
+.small { font-size: .84rem; }
+.order-msg { background: var(--surface); border: 1px solid var(--line); padding: 14px; white-space: pre-wrap; font-family: var(--f-mono); font-size: .78rem; max-height: 220px; overflow: auto; }
+
+.loading { grid-column: 1 / -1; color: var(--muted); padding: 40px 0; }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 12px 20px; font-size: .88rem; z-index: 60; max-width: calc(100vw - 32px); }
+
+@media (max-width: 900px) {
+  .nav { display: none; }
+  .menu-btn { display: inline-grid; }
+  .top .wrap { grid-template-columns: auto 1fr auto; }
+  .brand { justify-self: center; }
+  .hero .wrap, .about .wrap { grid-template-columns: minmax(0, 1fr); }
+  .row4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 16px; }
+  .visit .wrap { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .sheet { grid-template-columns: minmax(0, 1fr); }
+  .filters .right { margin-left: 0; }
+}
+@media (max-width: 520px) {
+  .brand { font-size: 1.4rem; }
+  .step { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .cats-band .wrap { justify-content: flex-start; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 14px; }
+  .card .info { grid-template-columns: minmax(0, 1fr); }
+  .tools .icon-btn { width: 36px; }
+}
+</style>
+</head>
+<body>
+
+<div class="notice"><div class="wrap">Envío gratis desde 80 € en la provincia · Recogida en tienda sin coste</div></div>
+
+<header class="top" id="top">
+  <div class="wrap">
+    <div style="display:flex;align-items:center;gap:20px;min-width:0">
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
+      </button>
+      <nav class="nav" aria-label="Principal">
+        <a href="#tienda">Tienda</a>
+        <a href="#novedades">Recién llegado</a>
+        <a href="#nosotros">Nosotros</a>
+        <a href="#visitanos">Visítanos</a>
+      </nav>
+    </div>
+    <a class="brand" href="#top" aria-label="mhogarstore, inicio">mhogar<em>store</em></a>
+    <div class="tools">
+      <button class="icon-btn" id="searchBtn" aria-label="Buscar" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+      </button>
+      <button class="icon-btn" id="favBtn" aria-label="Ver guardados">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>
+        <span class="count" id="favCount" hidden>0</span>
+      </button>
+      <button class="icon-btn" id="cartBtn" aria-label="Abrir cesta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+        <span class="count" id="cartCount" hidden>0</span>
+      </button>
+    </div>
+  </div>
+  <div class="searchbar" id="searchbar" hidden>
+    <div class="wrap">
+      <label for="q" class="sr">Buscar en la tienda</label>
+      <input id="q" type="search" placeholder="Busca una pieza: aparador, lámpara, espejo…" autocomplete="off">
+      <button class="link small" id="searchClose">Cerrar</button>
+    </div>
+  </div>
+  <div class="mobile-nav" id="mobileNav" hidden>
+    <div class="wrap">
+      <a href="#tienda">Tienda</a>
+      <a href="#novedades">Recién llegado</a>
+      <a href="#nosotros">Nosotros</a>
+      <a href="#visitanos">Visítanos</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-copy">
+        <span class="eyebrow">Muebles y objetos de segunda mano</span>
+        <h1>Piezas con historia para <em>tu casa</em></h1>
+        <p>Elegimos cada mueble uno a uno, lo revisamos y lo dejamos listo para que siga en uso muchos años más.</p>
+        <div class="actions">
+          <a class="btn" href="#tienda">Ver la tienda</a>
+          <a class="btn btn-line" href="#novedades">Recién llegado</a>
+        </div>
+      </div>
+      <figure class="hero-art" id="heroArt" style="margin:0"></figure>
+    </div>
+  </section>
+
+  <nav class="cats-band" aria-label="Categorías"><div class="wrap" id="catsBand"></div></nav>
+
+  <section class="block" id="novedades">
+    <div class="wrap">
+      <div class="sec-head">
+        <div><p class="eyebrow">Esta semana</p><h2>Recién llegado</h2></div>
+        <a class="link small" href="#tienda" id="seeAllNew">Ver todo</a>
+      </div>
+      <div class="row4" id="newRow"></div>
+    </div>
+  </section>
+
+  <section class="block" id="tienda" style="padding-top:0">
+    <div class="wrap" style="padding-top:0">
+      <div class="sec-head">
+        <div><p class="eyebrow">Catálogo</p><h2 id="shopTitle">Toda la tienda</h2></div>
+        <span class="result-n" id="resultN"></span>
+      </div>
+      <div class="filters">
+        <div class="chips" id="chips" role="group" aria-label="Filtrar por categoría"></div>
+        <div class="right">
+          <label class="sel" for="cond">Estado
+            <select id="cond">
+              <option value="">Todos</option>
+              <option value="nuevo">Como nuevo</option>
+              <option value="muy">Muy buen estado</option>
+              <option value="bueno">Buen estado</option>
+            </select>
+          </label>
+          <label class="sel" for="sort">Ordenar
+            <select id="sort">
+              <option value="new">Más recientes</option>
+              <option value="asc">Precio: de menor a mayor</option>
+              <option value="desc">Precio: de mayor a menor</option>
+            </select>
+          </label>
+          <label class="check" for="avail"><input type="checkbox" id="avail"> Solo disponibles</label>
+        </div>
+      </div>
+      <div class="grid" id="grid"></div>
+    </div>
+  </section>
+
+  <section class="block about" id="nosotros">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow" style="margin-bottom:10px">Nosotros</p>
+        <h2>Una casa también se hace con lo que ya existe</h2>
+      </div>
+      <div>
+        <p class="lead">En mhogarstore buscamos muebles y objetos bien hechos que merecen otra casa. Menos prisa, menos residuo y más carácter en cada habitación.</p>
+        <div class="steps">
+          <div class="step"><h3>Elegimos</h3><p>Solo entra en tienda lo que nos llevaríamos a casa: buena madera, buenas proporciones y piezas que aguantan.</p></div>
+          <div class="step"><h3>Revisamos</h3><p>Limpiamos, ajustamos y, si hace falta, restauramos. Cada ficha dice el estado real y enseña las marcas de uso.</p></div>
+          <div class="step"><h3>Te lo llevamos</h3><p>Recógelo en tienda o te lo llevamos a casa. Antes de enviarte un mueble grande, confirmamos contigo las medidas.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block visit" id="visitanos">
+    <div class="wrap">
+      <h2>Visítanos</h2>
+      <div class="col">
+        <p class="eyebrow">Tienda</p>
+        <p>Calle Ejemplo, 12<br>03000 Tu ciudad</p>
+        <p class="placeholder">Dirección pendiente de confirmar</p>
+      </div>
+      <div class="col">
+        <p class="eyebrow">Horario</p>
+        <dl>
+          <dt>Lun – Vie</dt><dd>10:00 – 14:00 · 17:00 – 20:30</dd>
+          <dt>Sábado</dt><dd>10:00 – 14:00</dd>
+          <dt>Domingo</dt><dd>Cerrado</dd>
+        </dl>
+      </div>
+      <div class="col">
+        <p class="eyebrow">Contacto</p>
+        <p class="copyable"><span id="phoneTxt">600 000 000</span> <button class="link small" data-copy="600 000 000">Copiar</button></p>
+        <p class="copyable"><span>hola@mhogarstore.com</span> <button class="link small" data-copy="hola@mhogarstore.com">Copiar</button></p>
+        <p><a class="link small" id="waLink" href="https://wa.me/34600000000" target="_blank" rel="noopener">Escríbenos por WhatsApp</a></p>
+        <p class="muted small">Pago con tarjeta, Bizum o efectivo en tienda.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="news">
+    <div class="wrap">
+      <h2>Las piezas nuevas llegan cada jueves. Te avisamos.</h2>
+      <form id="newsForm">
+        <label for="newsEmail" class="sr">Tu correo</label>
+        <input id="newsEmail" type="email" required placeholder="Tu correo electrónico">
+        <button type="submit">Suscribirme</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 mhogarstore · Muebles y objetos de segunda mano</span>
+    <nav aria-label="Pie"><a href="#tienda">Tienda</a><a href="#nosotros">Nosotros</a><a href="#visitanos">Visítanos</a><span>Envíos y devoluciones</span></nav>
+  </div>
+</footer>
+
+<dialog id="itemDlg" aria-labelledby="dlgTitle"></dialog>
+<div class="drawer" id="drawer" hidden></div>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Dibujos de línea por tipo de pieza (viewBox 200×200) ----------
+  var ART = {
+    silla: '<path d="M68 40c0-8 64-8 64 0v62H68z"/><path d="M76 52h48M76 66h48"/><path d="M60 102h80v10H60z"/><path d="M66 112l-6 64M134 112l6 64M70 150h60"/>',
+    butaca: '<path d="M52 96c0-40 96-40 96 0v26H52z"/><path d="M38 104c0-10 18-10 18 0v40H38zM144 104c0-10 18-10 18 0v40h-18z"/><path d="M38 144h124v12H38z"/><path d="M50 156l-4 22M150 156l4 22"/>',
+    lampara: '<path d="M70 30h60l18 44H52z"/><path d="M100 74v96"/><path d="M76 172c0-6 48-6 48 0v4H76z"/><path d="M100 120l14-8"/>',
+    lamparita: '<path d="M78 62h44l14 40H64z"/><path d="M100 102v8"/><path d="M84 110c-10 30 0 50 16 50s26-20 16-50z"/><path d="M80 166h40"/>',
+    aparador: '<path d="M24 78h152v72H24z"/><path d="M75 78v72M125 78v72"/><path d="M44 112h12M94 112h12M144 112h12"/><path d="M34 150l-4 26M166 150l4 26"/><path d="M84 62c0-12 14-18 22-6"/><path d="M80 66h30"/>',
+    comoda: '<path d="M46 52h108v108H46z"/><path d="M46 88h108M46 124h108"/><circle cx="100" cy="70" r="3"/><circle cx="100" cy="106" r="3"/><circle cx="100" cy="142" r="3"/><path d="M54 160v16M146 160v16"/>',
+    espejo: '<ellipse cx="100" cy="100" rx="50" ry="72"/><ellipse cx="100" cy="100" rx="40" ry="62"/><path d="M84 60l18-14M86 78l28-22"/>',
+    jarron: '<path d="M88 34h24v12c28 18 30 70 6 110H82C58 116 60 64 88 46z"/><path d="M84 34h32"/><path d="M68 110h64"/>',
+    mesa: '<path d="M44 74h112v8H44z"/><path d="M58 82l-12 92M142 82l12 92"/><path d="M52 136h96"/><path d="M84 54c6-14 26-14 32 0z"/>',
+    banco: '<ellipse cx="100" cy="74" rx="44" ry="10"/><path d="M62 80l-10 94M138 80l10 94M86 84l-4 90M114 84l4 90"/><path d="M58 136h84"/>',
+    vajilla: '<ellipse cx="100" cy="130" rx="64" ry="18"/><ellipse cx="100" cy="126" rx="40" ry="10"/><path d="M70 100c0 22 60 22 60 0z"/><path d="M130 100c14 0 14 16 0 14"/><path d="M84 80c4-8-4-12 0-20M100 80c4-8-4-12 0-20M116 80c4-8-4-12 0-20"/>',
+    manta: '<path d="M40 70h120v70H40z"/><path d="M40 84h120M40 126h120"/><path d="M52 140v16M64 140v16M76 140v16M88 140v16M100 140v16M112 140v16M124 140v16M136 140v16M148 140v16"/>',
+    cuadro: '<path d="M44 40h112v120H44z"/><path d="M56 52h88v96H56z"/><path d="M60 136l26-34 18 22 14-14 22 26"/><circle cx="122" cy="74" r="8"/>',
+    estanteria: '<path d="M50 26h100v150H50z"/><path d="M50 64h100M50 102h100M50 140h100"/><path d="M62 64V40h8v24M72 64V44h7v20M84 64V36h9v28"/><path d="M110 102c0-14 22-14 22 0z"/><path d="M64 140v-20h30v20"/>'
+  };
+  function svg(kind, extraClass) {
+    return '<svg viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"' +
+      (extraClass ? ' class="' + extraClass + '"' : "") + '>' + (ART[kind] || ART.jarron) + '</svg>';
+  }
+
+  // ---------- Catálogo de ejemplo ----------
+  var CATS = [
+    { id: "muebles", name: "Muebles" },
+    { id: "iluminacion", name: "Iluminación" },
+    { id: "decoracion", name: "Decoración" },
+    { id: "menaje", name: "Menaje" },
+    { id: "textil", name: "Textil" }
+  ];
+  var CFG = window.MHOGAR || {};
+  var LIVE = !!(CFG.supabaseUrl && CFG.supabaseAnonKey);
+  var ART_BY_CAT = { muebles: "aparador", iluminacion: "lampara", decoracion: "jarron", menaje: "vajilla", textil: "manta" };
+  var CONDS = { nuevo: "Como nuevo", muy: "Muy buen estado", bueno: "Buen estado, con marcas de uso" };
+  var BIG = { muebles: true };
+  function daysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); return d.toISOString(); }
+
+  var ITEMS = [
+    { ref: "0148", title: "Aparador de teca de tres puertas", cat: "muebles", art: "aparador", price: 420, cond: "muy", size: "an 180 × fo 45 × al 78 cm", mat: "Teca y chapa de teca", era: "Años 60", tone: 3, days: 0, desc: "Aparador escandinavo con tiradores tallados en la propia madera. Interior con balda regulable. Una pequeña marca en la tapa, tratada con aceite." },
+    { ref: "0147", title: "Lámpara de pie de latón", cat: "iluminacion", art: "lampara", price: 135, cond: "muy", size: "al 160 cm · Ø pantalla 38 cm", mat: "Latón y lino", era: "Años 70", tone: 1, days: 1, desc: "Pantalla de lino nueva y cableado revisado por un electricista. Casquillo E27." },
+    { ref: "0146", title: "Silla de bistró de madera curvada", cat: "muebles", art: "silla", price: 65, was: 85, cond: "bueno", size: "an 42 × fo 50 × al 86 cm · asiento a 46 cm", mat: "Haya curvada y rejilla", era: "Años 50", tone: 2, days: 1, desc: "Rejilla del asiento rehecha a mano. Tiene marcas de uso en las patas que hemos querido conservar." },
+    { ref: "0145", title: "Jarrón de cerámica esmaltada", cat: "decoracion", art: "jarron", price: 38, cond: "nuevo", size: "al 32 × Ø 18 cm", mat: "Cerámica de Manises", era: "Años 80", tone: 4, days: 2, desc: "Esmalte verde con chorreado irregular. Sin desconchones." },
+    { ref: "0144", title: "Butaca tapizada en bouclé", cat: "muebles", art: "butaca", price: 290, cond: "muy", size: "an 78 × fo 74 × al 72 cm", mat: "Estructura de pino, tapizado nuevo", era: "Años 60", tone: 1, days: 3, desc: "Retapizada en bouclé crudo con espuma nueva. Estructura sólida, sin holguras." },
+    { ref: "0143", title: "Cómoda de cuatro cajones", cat: "muebles", art: "comoda", price: 240, cond: "bueno", size: "an 90 × fo 46 × al 104 cm", mat: "Pino macizo", era: "Años 40", tone: 3, days: 4, desc: "Cajones con guías de madera que corren bien. Lijada y encerada. Se aprecian marcas antiguas en los laterales." },
+    { ref: "0142", title: "Espejo ovalado con marco dorado", cat: "decoracion", art: "espejo", price: 95, cond: "muy", size: "an 52 × al 78 cm", mat: "Madera dorada y luna biselada", era: "Principios s. XX", tone: 2, days: 5, desc: "Luna original con ligera pátina en el borde inferior. Marco consolidado. Lleva colgador nuevo." },
+    { ref: "0141", title: "Lámpara de sobremesa de cerámica", cat: "iluminacion", art: "lamparita", price: 58, cond: "nuevo", size: "al 48 cm · Ø pantalla 30 cm", mat: "Cerámica y algodón", era: "Años 70", tone: 4, days: 6, desc: "Base de cerámica color arena. Pantalla de algodón nueva. Interruptor en el cable." },
+    { ref: "0140", title: "Mesa de comedor de roble", cat: "muebles", art: "mesa", price: 380, cond: "bueno", size: "an 160 × fo 85 × al 75 cm", mat: "Roble macizo", era: "Años 50", tone: 1, days: 8, desc: "Caben seis personas. Tablero lijado y barnizado al agua. Las patas tienen golpes de uso, todo estable.", sold: true },
+    { ref: "0139", title: "Juego de café de porcelana", cat: "menaje", art: "vajilla", price: 45, cond: "muy", size: "6 tazas, 6 platos, cafetera, azucarero", mat: "Porcelana de Bidasoa", era: "Años 60", tone: 2, days: 9, desc: "Completo. Una taza con un pequeño desgaste en el filo dorado." },
+    { ref: "0138", title: "Manta de lana a cuadros", cat: "textil", art: "manta", price: 42, cond: "muy", size: "130 × 180 cm", mat: "Lana virgen", era: "Años 70", tone: 3, days: 10, desc: "Lavada en seco. Flecos en los dos extremos. Sin polilla ni manchas." },
+    { ref: "0137", title: "Taburete de tres patas", cat: "muebles", art: "banco", price: 48, cond: "bueno", size: "Ø 34 × al 46 cm", mat: "Olmo", era: "Años 30", tone: 4, days: 11, desc: "Taburete rústico de una pieza. Asiento muy gastado por el uso, con mucho carácter." },
+    { ref: "0136", title: "Grabado enmarcado de paisaje", cat: "decoracion", art: "cuadro", price: 70, cond: "muy", size: "an 46 × al 58 cm", mat: "Grabado sobre papel, marco de nogal", era: "Años 50", tone: 1, days: 12, desc: "Firmado a lápiz. Cristal nuevo y trasera sellada.", sold: true },
+    { ref: "0135", title: "Estantería abierta de cinco baldas", cat: "muebles", art: "estanteria", price: 210, was: 260, cond: "bueno", size: "an 90 × fo 30 × al 180 cm", mat: "Haya", era: "Años 70", tone: 2, days: 14, desc: "Se entrega montada. Una balda con una mancha clara de agua en el fondo." },
+    { ref: "0134", title: "Vajilla de loza de 18 piezas", cat: "menaje", art: "vajilla", price: 60, cond: "bueno", size: "6 llanos, 6 hondos, 6 de postre", mat: "Loza de Sargadelos", era: "Años 80", tone: 4, days: 16, desc: "Dos platos con pequeños saltados en el borde. El resto perfecto." },
+    { ref: "0133", title: "Cojines de lino lavado (pareja)", cat: "textil", art: "manta", price: 34, cond: "nuevo", size: "45 × 45 cm cada uno", mat: "Lino y relleno de plumón", era: "Actual", tone: 3, days: 18, desc: "Funda con cremallera oculta. Lavables a 30 °C." }
+  ];
+  ITEMS.forEach(function (it) { it.id = it.ref; it.date = daysAgo(it.days); it.photos = []; });
+  if (LIVE) ITEMS = [];  // con la base de datos conectada, los ejemplos no se usan
+
+  // ---------- Base de datos (Supabase, solo lectura pública) ----------
+  function api(path, opts) {
+    opts = opts || {};
+    var h = { apikey: CFG.supabaseAnonKey, Authorization: "Bearer " + CFG.supabaseAnonKey, "Content-Type": "application/json" };
+    for (var k in (opts.headers || {})) h[k] = opts.headers[k];
+    return fetch(CFG.supabaseUrl.replace(/\/+$/, "") + "/rest/v1/" + path, { method: opts.method || "GET", headers: h, body: opts.body });
+  }
+  function photoUrl(path) { return CFG.supabaseUrl.replace(/\/+$/, "") + "/storage/v1/object/public/fotos/" + path.split("/").map(encodeURIComponent).join("/"); }
+  function fromRow(r, i) {
+    var days = Math.floor((Date.now() - new Date(r.created_at).getTime()) / 86400000);
+    return {
+      id: r.id, ref: r.ref, title: r.title, cat: r.category_id, art: ART_BY_CAT[r.category_id],
+      price: r.price_cents / 100, was: r.was_price_cents ? r.was_price_cents / 100 : null,
+      cond: r.condition, size: r.dimensions || "", mat: r.material || "", era: r.era || "", desc: r.description || "",
+      tone: (i % 4) + 1, days: days, date: r.created_at, sold: r.status === "vendido", reserved: r.status === "reservado",
+      photos: (r.photos || []).map(function (p) { return { src: photoUrl(p.path), alt: p.alt || r.title }; })
+    };
+  }
+  function loadCatalog() {
+    return api("catalog?select=*&order=created_at.desc").then(function (res) {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    }).then(function (rows) {
+      ITEMS = rows.map(fromRow);
+      cart = cart.filter(function (id) { var it = byId(id); return it && !it.sold; });
+      save("mh_cart_v1", cart);
+    });
+  }
+  function subscribe(email, kind, itemId) {
+    if (!LIVE) return Promise.resolve(true);
+    return api("subscribers", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ email: email, kind: kind, item_id: itemId || null }) })
+      .then(function (res) { return res.ok || res.status === 409; }, function () { return false; });
+  }
+
+  // ---------- Almacenamiento local (puede fallar en modo privado) ----------
+  function load(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+  function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  var cart = load("mh_cart_v1", []);
+  var favs = load("mh_favs_v1", []);
+
+  // ---------- Utilidades ----------
+  var EUR = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+  var $ = function (s) { return document.querySelector(s); };
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function norm(s) { return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); }
+  function byId(id) { return ITEMS.filter(function (x) { return x.id === id; })[0]; }
+  function catName(id) { var c = CATS.filter(function (x) { return x.id === id; })[0]; return c ? c.name : ""; }
+  function tone(it) { return "background:var(--tone-" + it.tone + ")"; }
+  var toastT;
+  function toast(msg) {
+    var t = $(".toast"); if (t) t.remove();
+    t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); t.textContent = msg;
+    document.body.appendChild(t); clearTimeout(toastT); toastT = setTimeout(function () { t.remove(); }, 2600);
+  }
+  function copy(text) {
+    var done = function () { toast("Copiado: " + text); };
+    try { navigator.clipboard.writeText(text).then(done, function () { toast(text); }); } catch (e) { toast(text); }
+  }
+  function pic(it, i) {
+    var ph = it.photos && it.photos[i || 0];
+    return ph ? '<img src="' + esc(ph.src) + '" alt="' + esc(ph.alt) + '" loading="lazy" decoding="async">' : svg(it.art);
+  }
+  function priceHtml(it) { return (it.was ? "<s>" + EUR.format(it.was) + "</s>" : "") + EUR.format(it.price); }
+
+  // ---------- Estado de la vista ----------
+  var state = { cat: "", cond: "", sort: "new", avail: false, q: "", onlyFavs: false };
+
+  function card(it) {
+    var fav = favs.indexOf(it.id) > -1;
+    var badge = it.sold ? '<span class="badge sold">Vendido</span>' : it.reserved ? '<span class="badge">Reservado</span>' : (it.days <= 3 ? '<span class="badge">Nuevo</span>' : (it.was ? '<span class="badge">Rebajado</span>' : ""));
+    return '<article style="position:relative">' +
+      '<button class="card' + (it.sold ? " is-sold" : "") + '" data-open="' + it.id + '" aria-label="' + esc(it.title) + ', ' + (it.sold ? "vendido" : EUR.format(it.price)) + '">' +
+        '<div class="pic" style="' + tone(it) + '">' + pic(it) + badge + '</div>' +
+        '<div class="info"><h3>' + esc(it.title) + '</h3><span class="price">' + (it.sold ? '<span class="muted">Vendido</span>' : priceHtml(it)) + '</span>' +
+        '<span class="sub">' + esc([it.era, it.size.split(" · ")[0]].filter(Boolean).join(" · ")) + '</span></div>' +
+      '</button>' +
+      '<button class="icon-btn fav" data-fav="' + it.id + '" aria-pressed="' + fav + '" aria-label="' + (fav ? "Quitar de guardados" : "Guardar") + '" style="position:absolute;top:8px;right:8px">' +
+        '<svg viewBox="0 0 24 24" fill="' + (fav ? "currentColor" : "none") + '" stroke="currentColor" stroke-width="1.4"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></button>' +
+    '</article>';
+  }
+
+  function renderCats() {
+    $("#catsBand").innerHTML = CATS.map(function (c) {
+      var n = ITEMS.filter(function (x) { return x.cat === c.id && !x.sold; }).length;
+      return '<button data-cat="' + c.id + '"><span>' + c.name + '</span><sup>' + n + '</sup></button>';
+    }).join("");
+    $("#chips").innerHTML = [{ id: "", name: "Todo" }].concat(CATS).map(function (c) {
+      return '<button class="chip" data-chip="' + c.id + '" aria-pressed="' + (state.cat === c.id && !state.onlyFavs) + '">' + c.name + '</button>';
+    }).join("") + (state.onlyFavs ? '<button class="chip" aria-pressed="true" data-chip="__favs">Guardados</button>' : "");
+  }
+
+  function renderNew() {
+    var list = ITEMS.filter(function (x) { return !x.sold; }).sort(function (a, b) { return a.days - b.days; }).slice(0, 4);
+    $("#newRow").innerHTML = list.map(card).join("");
+  }
+
+  function renderGrid() {
+    var q = norm(state.q);
+    var list = ITEMS.filter(function (it) {
+      if (state.onlyFavs && favs.indexOf(it.id) < 0) return false;
+      if (!state.onlyFavs && state.cat && it.cat !== state.cat) return false;
+      if (state.cond && it.cond !== state.cond) return false;
+      if (state.avail && it.sold) return false;
+      if (q && norm(it.title + " " + it.mat + " " + it.era + " " + catName(it.cat)).indexOf(q) < 0) return false;
+      return true;
+    });
+    list.sort(function (a, b) {
+      if (a.sold !== b.sold) return a.sold ? 1 : -1;
+      if (state.sort === "asc") return a.price - b.price;
+      if (state.sort === "desc") return b.price - a.price;
+      return a.days - b.days;
+    });
+    $("#shopTitle").textContent = state.onlyFavs ? "Tus guardados" : (state.q ? "Resultados para «" + state.q + "»" : (catName(state.cat) || "Toda la tienda"));
+    $("#resultN").textContent = list.length + (list.length === 1 ? " pieza" : " piezas");
+    $("#grid").innerHTML = list.length ? list.map(card).join("") :
+      '<div class="empty" style="grid-column:1/-1"><p>' + (state.onlyFavs ? "Todavía no has guardado ninguna pieza. Pulsa el corazón de una ficha para guardarla." : "No hay piezas con estos filtros.") + '</p><button class="btn btn-line" id="clearF">Ver toda la tienda</button></div>';
+    renderCats();
+  }
+
+  function renderCounts() {
+    var c = $("#cartCount"), f = $("#favCount");
+    c.textContent = cart.length; c.hidden = !cart.length;
+    f.textContent = favs.length; f.hidden = !favs.length;
+  }
+
+  function renderAll() { renderNew(); renderGrid(); renderCounts(); }
+
+  // ---------- Portada ----------
+  function hero() {
+    var it = ITEMS.filter(function (x) { return !x.sold && x.photos.length; })[0] || ITEMS.filter(function (x) { return !x.sold; })[0];
+    if (!it) { $("#heroArt").innerHTML = svg("aparador"); return; }
+    $("#heroArt").innerHTML = pic(it) +
+      '<figcaption><span class="small">' + esc(it.title) + ' · ' + esc(it.era) + '</span><span class="mono">Ref. ' + it.ref + '</span></figcaption>' +
+      '<button data-open="' + it.id + '" aria-label="Ver ' + esc(it.title) + '"></button>';
+  }
+
+  // ---------- Ficha ----------
+  var dlg = $("#itemDlg");
+  function openItem(id) {
+    var it = byId(id); if (!it) return;
+    var inCart = cart.indexOf(it.id) > -1;
+    var fav = favs.indexOf(it.id) > -1;
+    var buy;
+    if (it.sold) {
+      buy = '<div class="sold-box"><p><strong>Esta pieza ya se ha vendido.</strong> Déjanos tu correo y te avisamos si entra algo parecido.</p>' +
+        '<form id="alertForm"><label for="alertEmail" class="sr">Tu correo</label><input id="alertEmail" type="email" required placeholder="Tu correo electrónico"><button type="submit">Avisarme</button></form></div>';
+    } else {
+      buy = (BIG[it.cat] && !inCart ? '<label class="measure-note" for="measureOk"><input type="checkbox" id="measureOk"><span>He comprobado las medidas y la pieza cabe por puertas, escalera y ascensor. <span class="mono">' + esc(it.size) + '</span></span></label>' : "") +
+        '<div class="actions">' +
+          (inCart ? '<button class="btn" id="goCart">Ver la cesta</button>' : it.reserved ? '<button class="btn" disabled>Reservada</button>' :
+            '<button class="btn" id="addCart"' + (BIG[it.cat] ? " disabled" : "") + '>Añadir a la cesta</button>') +
+          '<button class="btn btn-line" id="dlgFav" aria-pressed="' + fav + '">' + (fav ? "Guardada" : "Guardar") + '</button>' +
+        '</div>' +
+        (it.reserved ? '<p class="small"><strong>Alguien está pagando esta pieza ahora mismo.</strong> Si no completa la compra, vuelve a estar disponible en unos minutos.</p>' : "") +
+        '<p class="muted small">Pieza única. Pago seguro con tarjeta, Apple Pay o Google Pay. Recogida gratis en tienda o envío a domicilio.</p>';
+    }
+    dlg.innerHTML = '<div class="sheet">' +
+      '<div class="gallery"><div class="main" id="gMain" style="' + tone(it) + '">' + pic(it) + '</div>' +
+        (it.photos.length > 1 ? '<div class="thumbs">' + it.photos.map(function (ph, i) {
+          return '<button aria-pressed="' + (i === 0) + '" data-photo="' + i + '" aria-label="Foto ' + (i + 1) + '">' + pic(it, i) + '</button>';
+        }).join("") + '</div>' : it.photos.length ? "" :
+        '<div class="thumbs"><button aria-pressed="true" data-view="full" aria-label="Vista completa" style="' + tone(it) + '">' + svg(it.art) + '</button>' +
+        '<button class="z" aria-pressed="false" data-view="zoom" aria-label="Detalle" style="' + tone(it) + '">' + svg(it.art) + '</button></div>') + '</div>' +
+      '<div class="detail">' +
+        '<button class="icon-btn close" id="dlgClose" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 6l12 12M18 6 6 18"/></svg></button>' +
+        '<p class="eyebrow">' + catName(it.cat) + ' · <span class="mono">Ref. ' + it.ref + '</span></p>' +
+        '<h2 id="dlgTitle">' + esc(it.title) + '</h2>' +
+        '<p class="price">' + (it.sold ? '<span style="color:var(--sold)">Vendido</span>' : priceHtml(it)) + '</p>' +
+        '<p class="desc">' + esc(it.desc) + '</p>' +
+        '<dl class="specs"><dt>Estado</dt><dd>' + CONDS[it.cond] + '</dd>' +
+          (it.size ? '<dt>Medidas</dt><dd class="mono">' + esc(it.size) + '</dd>' : "") +
+          (it.mat ? '<dt>Material</dt><dd>' + esc(it.mat) + '</dd>' : "") +
+          (it.era ? '<dt>Época</dt><dd>' + esc(it.era) + '</dd>' : "") + '</dl>' +
+        buy +
+      '</div></div>';
+    if (!dlg.open) { try { dlg.showModal(); } catch (e) { dlg.setAttribute("open", ""); } }
+    dlg.dataset.id = it.id;
+  }
+  dlg.addEventListener("click", function (e) {
+    if (e.target === dlg) return dlg.close();
+    var t = e.target.closest("button, input"); if (!t) return;
+    var id = dlg.dataset.id;
+    if (t.id === "dlgClose") dlg.close();
+    else if (t.dataset.photo) {
+      dlg.querySelectorAll("[data-photo]").forEach(function (b) { b.setAttribute("aria-pressed", b === t); });
+      $("#gMain").innerHTML = pic(byId(id), +t.dataset.photo);
+    }
+    else if (t.dataset.view) {
+      dlg.querySelectorAll("[data-view]").forEach(function (b) { b.setAttribute("aria-pressed", b === t); });
+      $("#gMain").classList.toggle("zoom", t.dataset.view === "zoom");
+    }
+    else if (t.id === "measureOk") $("#addCart").disabled = !t.checked;
+    else if (t.id === "addCart") { if (cart.indexOf(id) < 0) cart.push(id); save("mh_cart_v1", cart); renderCounts(); toast("Añadida a la cesta"); openItem(id); }
+    else if (t.id === "goCart") { dlg.close(); openCart(); }
+    else if (t.id === "dlgFav") { toggleFav(id); openItem(id); }
+  });
+  dlg.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var email = $("#alertEmail").value, form = e.target;
+    subscribe(email, "aviso", dlg.dataset.id).then(function (ok) {
+      toast(ok ? "Te avisaremos en " + email : "No se ha podido guardar. Inténtalo de nuevo."); if (ok) form.reset();
+    });
+  });
+
+  function toggleFav(id) {
+    var i = favs.indexOf(id);
+    if (i > -1) favs.splice(i, 1); else favs.push(id);
+    save("mh_favs_v1", favs); renderAll();
+    toast(i > -1 ? "Quitada de guardados" : "Guardada");
+  }
+
+  // ---------- Cesta ----------
+  var drawer = $("#drawer");
+  var SHIP_FREE = CFG.shipFreeFrom != null ? CFG.shipFreeFrom : 80, SHIP = CFG.shipCost != null ? CFG.shipCost : 25;
+  function openCart(step) {
+    var items = cart.map(byId).filter(Boolean);
+    var sub = items.reduce(function (s, x) { return s + x.price; }, 0);
+    var body;
+    if (!items.length) {
+      body = '<p class="muted">La cesta está vacía.</p><a class="btn btn-line" href="#tienda" data-closecart>Ver la tienda</a>';
+    } else if (step === "send") {
+      var msg = "Hola, quiero comprar en mhogarstore:\n" + items.map(function (x) { return "· Ref. " + x.ref + " " + x.title + " (" + EUR.format(x.price) + ")"; }).join("\n") +
+        "\nTotal: " + EUR.format(sub) + "\nEntrega: " + lastShip;
+      body = '<p>' + (LIVE ? "Si prefieres pagar con Bizum o tienes dudas, envíanos este mensaje por WhatsApp." : "Vista de demostración: el pago con tarjeta se activa al conectar Stripe. Mientras tanto, el pedido se puede enviar por WhatsApp.") + '</p>' +
+        '<div class="order-msg" id="orderMsg">' + esc(msg) + '</div>' +
+        '<div class="actions"><button class="btn" id="copyOrder">Copiar mensaje</button>' +
+        '<a class="btn btn-line" target="_blank" rel="noopener" href="https://wa.me/' + esc(CFG.whatsapp || "34600000000") + '?text=' + encodeURIComponent(msg) + '">Abrir WhatsApp</a></div>' +
+        '<button class="link small" id="backCart">Volver a la cesta</button>';
+    } else {
+      body = items.map(function (x) {
+        return '<div class="line-item"><div class="mini" style="' + tone(x) + '">' + pic(x) + '</div>' +
+          '<div><p>' + esc(x.title) + '</p><p class="mono muted">Ref. ' + x.ref + '</p><button class="link remove" data-remove="' + x.id + '">Quitar</button></div>' +
+          '<span style="font-variant-numeric:tabular-nums">' + EUR.format(x.price) + '</span></div>';
+      }).join("") +
+        '<label class="sel" for="shipSel" style="justify-content:space-between">Entrega <select id="shipSel"><option>Recogida en tienda</option><option>Envío a domicilio</option></select></label>' +
+        '<div class="totals"><span class="muted">Subtotal</span><span>' + EUR.format(sub) + '</span>' +
+        '<span class="muted">Envío</span><span id="shipCost">0 €</span>' +
+        '<span class="big">Total</span><span class="big" id="totalCost">' + EUR.format(sub) + '</span></div>' +
+        '<p class="small muted" id="shipNote"></p>' +
+        '<button class="btn" id="checkout">Pagar ahora</button>' +
+        '<button class="link small" id="viaWhatsapp">¿Prefieres Bizum? Pide por WhatsApp</button>';
+    }
+    drawer.innerHTML = '<button class="shade" data-closecart aria-label="Cerrar cesta"></button>' +
+      '<aside role="dialog" aria-modal="true" aria-labelledby="cartTitle"><header><h2 id="cartTitle">Tu cesta</h2>' +
+      '<button class="icon-btn" data-closecart aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>' + body + '</aside>';
+    drawer.hidden = false;
+    drawer.dataset.sub = sub;
+    updateShip();
+  }
+  var lastShip = "Recogida en tienda";
+  function updateShip() {
+    var sel = $("#shipSel"); if (!sel) return;
+    sel.value = lastShip;
+    var sub = +drawer.dataset.sub, home = sel.value === "Envío a domicilio";
+    var cost = home && sub < SHIP_FREE ? SHIP : 0;
+    $("#shipCost").textContent = EUR.format(cost);
+    $("#totalCost").textContent = EUR.format(sub + cost);
+    $("#shipNote").textContent = home ? (sub < SHIP_FREE ? "Te faltan " + EUR.format(SHIP_FREE - sub) + " para el envío gratis." : "Envío gratis en la provincia.") : "Te avisamos cuando esté lista para recoger.";
+  }
+  drawer.addEventListener("change", function (e) { if (e.target.id === "shipSel") { lastShip = e.target.value; updateShip(); } });
+  drawer.addEventListener("click", function (e) {
+    var t = e.target.closest("[data-closecart], [data-remove], #checkout, #viaWhatsapp, #copyOrder, #backCart"); if (!t) return;
+    if (t.hasAttribute("data-closecart")) drawer.hidden = true;
+    else if (t.dataset.remove) { cart = cart.filter(function (x) { return x !== t.dataset.remove; }); save("mh_cart_v1", cart); renderCounts(); openCart(); }
+    else if (t.id === "viaWhatsapp") openCart("send");
+    else if (t.id === "checkout") pay(t);
+    else if (t.id === "copyOrder") copy($("#orderMsg").textContent);
+    else if (t.id === "backCart") openCart();
+  });
+
+  // Pago con Stripe: el servidor reserva las piezas y devuelve la página de pago.
+  function pay(btn) {
+    if (!LIVE) return openCart("send");
+    btn.disabled = true; btn.textContent = "Preparando el pago…";
+    fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: cart, delivery: lastShip === "Envío a domicilio" ? "envio" : "recogida" }) })
+      .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, status: res.status, d: d }; }); })
+      .then(function (r) {
+        if (r.ok && r.d.url) { location.href = r.d.url; return; }
+        if (r.status === 409 && r.d.unavailable) {
+          cart = cart.filter(function (id) { return r.d.unavailable.indexOf(id) < 0; }); save("mh_cart_v1", cart);
+          toast("Hemos quitado de la cesta las piezas que ya no están disponibles.");
+          return loadCatalog().then(function () { renderAll(); openCart(); });
+        }
+        throw new Error(r.d.error || "Error");
+      })
+      .catch(function (err) {
+        toast(err.message && err.message !== "Error" ? err.message : "No se ha podido iniciar el pago. Inténtalo de nuevo.");
+        btn.disabled = false; btn.textContent = "Pagar ahora";
+      });
+  }
+
+  // ---------- Eventos de página ----------
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest("[data-open], [data-fav], [data-cat], [data-chip], #clearF, [data-copy]"); if (!t) return;
+    if (t.dataset.fav) { e.stopPropagation(); toggleFav(t.dataset.fav); }
+    else if (t.dataset.open) openItem(t.dataset.open);
+    else if (t.dataset.cat != null) { state.cat = t.dataset.cat; state.onlyFavs = false; renderGrid(); $("#tienda").scrollIntoView(); }
+    else if (t.dataset.chip != null) { if (t.dataset.chip !== "__favs") { state.cat = t.dataset.chip; state.onlyFavs = false; } renderGrid(); }
+    else if (t.id === "clearF") { state = { cat: "", cond: "", sort: state.sort, avail: false, q: "", onlyFavs: false }; $("#cond").value = ""; $("#avail").checked = false; $("#q").value = ""; renderGrid(); }
+    else if (t.dataset.copy) copy(t.dataset.copy);
+  });
+  $("#cond").addEventListener("change", function (e) { state.cond = e.target.value; renderGrid(); });
+  $("#sort").addEventListener("change", function (e) { state.sort = e.target.value; renderGrid(); });
+  $("#avail").addEventListener("change", function (e) { state.avail = e.target.checked; renderGrid(); });
+  $("#q").addEventListener("input", function (e) { state.q = e.target.value.trim(); state.onlyFavs = false; renderGrid(); });
+  $("#q").addEventListener("keydown", function (e) { if (e.key === "Enter") $("#tienda").scrollIntoView(); });
+  $("#searchBtn").addEventListener("click", function () {
+    var sb = $("#searchbar"); sb.hidden = !sb.hidden; this.setAttribute("aria-expanded", !sb.hidden);
+    if (!sb.hidden) $("#q").focus();
+  });
+  $("#searchClose").addEventListener("click", function () { $("#searchbar").hidden = true; $("#searchBtn").setAttribute("aria-expanded", "false"); });
+  $("#menuBtn").addEventListener("click", function () { var m = $("#mobileNav"); m.hidden = !m.hidden; this.setAttribute("aria-expanded", !m.hidden); });
+  $("#mobileNav").addEventListener("click", function (e) { if (e.target.tagName === "A") { this.hidden = true; $("#menuBtn").setAttribute("aria-expanded", "false"); } });
+  $("#favBtn").addEventListener("click", function () { state.onlyFavs = true; renderGrid(); $("#tienda").scrollIntoView(); });
+  $("#cartBtn").addEventListener("click", function () { openCart(); });
+  $("#newsForm").addEventListener("submit", function (e) {
+    e.preventDefault(); var form = e.target;
+    subscribe($("#newsEmail").value, "boletin").then(function (ok) {
+      toast(ok ? "Gracias. Te escribiremos los jueves con las novedades." : "No se ha podido guardar. Inténtalo de nuevo."); if (ok) form.reset();
+    });
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !drawer.hidden) drawer.hidden = true; });
+
+  // Vuelta desde Stripe sin pagar: liberar las piezas al momento.
+  (function () {
+    var m = location.search.match(/[?&]pago=cancelado&s=(cs_[A-Za-z0-9_]+)/);
+    if (!m) return;
+    if (LIVE) fetch("/api/cancel-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ session: m[1] }) }).catch(function () {});
+    history.replaceState(null, "", location.pathname + location.hash);
+    setTimeout(function () { toast("Pago cancelado. Tus piezas siguen en la cesta."); }, 300);
+  })();
+
+  // Contacto desde config.js
+  if (CFG.whatsapp) $("#waLink").href = "https://wa.me/" + CFG.whatsapp;
+
+  if (LIVE) {
+    $("#grid").innerHTML = '<p class="loading">Cargando piezas…</p>';
+    $("#newRow").innerHTML = "";
+    loadCatalog().then(function () { hero(); renderAll(); }, function () {
+      $("#grid").innerHTML = '<p class="loading">No hemos podido cargar el catálogo. Recarga la página en unos segundos.</p>';
+    });
+  } else { hero(); renderAll(); }
+})();
+</script>
+</body>
+</html>
