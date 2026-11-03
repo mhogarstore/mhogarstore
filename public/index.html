@@ -495,7 +495,9 @@ dialog::backdrop { background: var(--overlay); }
   // ---------- Base de datos (Supabase, solo lectura pública) ----------
   function api(path, opts) {
     opts = opts || {};
-    var h = { apikey: CFG.supabaseAnonKey, Authorization: "Bearer " + CFG.supabaseAnonKey, "Content-Type": "application/json" };
+    var h = { apikey: CFG.supabaseAnonKey, "Content-Type": "application/json" };
+    // Las claves antiguas (anon, JWT) también van en Authorization; las nuevas sb_publishable_ no.
+    if (/^eyJ/.test(CFG.supabaseAnonKey)) h.Authorization = "Bearer " + CFG.supabaseAnonKey;
     for (var k in (opts.headers || {})) h[k] = opts.headers[k];
     return fetch(CFG.supabaseUrl.replace(/\/+$/, "") + "/rest/v1/" + path, { method: opts.method || "GET", headers: h, body: opts.body });
   }
