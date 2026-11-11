@@ -16,7 +16,11 @@ export default async (req) => {
 
   // 1. Reservar todas las piezas o ninguna.
   const { data: items, error: resErr } = await db.rpc("reserve_items", { item_ids: ids, minutes: RESERVE_MINUTES });
-  if (resErr) { console.error(resErr); return json(500, { error: "No hemos podido preparar el pago. Inténtalo de nuevo." }); }
+  if (resErr) {
+    console.error(resErr);
+    const why = [resErr.code, resErr.message].filter(Boolean).join(" ").slice(0, 160);
+    return json(500, { error: `No hemos podido preparar el pago. Inténtalo de nuevo. (${why || "sin detalle"})` });
+  }
   if (!items || items.length !== ids.length) {
     const { data: rows } = await db.from("items").select("id, status, reserved_until").in("id", ids);
     const now = Date.now();
